@@ -96,9 +96,14 @@ pair<int, int> zero_intelligence(vector<vector<string>> vect, string comp) {
         }
     }
     chance++;
-    int i = rand()%3;
-    int j = rand()%3;
-    return make_pair(i, j);
+    int i, j;
+    while (true) {
+        i = rand()%3;
+        j = rand()%3;
+        if (vect[i][j] == "_") {
+            return make_pair(i, j);
+        }
+    }
 }
 
 int main() { 
@@ -113,7 +118,7 @@ int main() {
 
         v.push_back(rowV);
     }
-    cout << "_______________________________________________________________________________________________________________________________" << endl;
+    cout << "___________________________________________________________________________________________________________________________" << endl;
     cout << "Welcome to tic-tac-toe. Enter 1 to start." << endl;
     int g;
     cin >> g;
@@ -221,6 +226,54 @@ int main() {
                         x = comp_turn.first;
                         y = comp_turn.second;
                         updategame("x", x, y, v);
+                        printgame(v);
+                        if (i >= 4) {
+                            winner = checkwinner(v, i);
+                            if (winner == "Player2") {
+                                cout << "Computer won. Well played!" << endl;
+                                v = resetboard(v);
+                                break;
+                            }
+                        }
+                        
+                    }
+                }
+            }
+            if (choose == "x") {
+                for(int i = 0; i < 9; i++) {
+                    if (i % 2 == 1) {
+                        cout << "Your turn. Enter position(Row(Space)Column, ex- 2 3)." << endl;
+                        cin >> x >> y;
+                        x = x - 1;
+                        y = y - 1;
+                        if ((x>=0)&&(x<3)&&(y>=0)&&(y<3)) {
+                            if ((v[x][y] == "_")) {
+                                updategame("x", x, y, v);
+                                printgame(v); 
+                            } else {
+                                cout << "Ek hi position kitni baar daloge? Position already filled!!" << endl;
+                                i = i - 1;
+                                continue;
+                            }
+                            if (i>=4) {
+                                winner = checkwinner(v, i);
+                                if (winner == "Player1") {
+                                    cout << "Congrats, You won!" << endl;
+                                    v = resetboard(v);
+                                    break;
+                                }
+                            }
+                        } else {
+                            cout << "Arey yaar tic-tac-toe khelna nhi aata kya? Invalid Position!!" << endl;
+                            i = i - 1;
+                            continue;
+                        }    
+                    } else {
+                        cout << "Computer's turn" << endl;
+                        pair<int, int> comp_turn = zero_intelligence(v, "o");
+                        x = comp_turn.first;
+                        y = comp_turn.second;
+                        updategame("o", x, y, v);
                         printgame(v);
                         if (i >= 4) {
                             winner = checkwinner(v, i);
