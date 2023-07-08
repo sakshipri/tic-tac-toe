@@ -378,7 +378,7 @@ int main() {
                             }
                             if (i>=4) {
                                 winner = checkwinner(v, i);
-                                if (winner == "Player1") {
+                                if (winner == "Player2") {
                                     cout << "Congrats, You won!" << endl;
                                     v = resetboard(v);
                                     break;
@@ -400,7 +400,7 @@ int main() {
                         printgame(v);
                         if (i >= 4) {
                             winner = checkwinner(v, i);
-                            if (winner == "Player2") {
+                            if (winner == "Player1") {
                                 cout << "Computer won. Well played!" << endl;
                                 v = resetboard(v);
                                 break;
