@@ -51,11 +51,12 @@ string checkwinner(vector<vector<string>> board, int chance) {
     }
 
 }
-pair<int, int> zero_intelligence(vector<vector<string>> vect, string comp) {
+pair<int, pair<int, int>> intelligence(vector<vector<string>> vect, string comp, int depth, bool isMax) {
     // first check if the win is possible, if it is, win
     // if not, then check if loss is possible, if it is, not lose
-    // if not, play to make to in a row,  if possible
+    // if not, play to make two in a row,  if possible
     // if not, play random
+
     int chance;
     string human;
     string winner;
@@ -68,6 +69,10 @@ pair<int, int> zero_intelligence(vector<vector<string>> vect, string comp) {
     } else {
         chance = -1;
     }
+
+    vector<int> values;
+    vector<pair<int, int>> options;
+
     for (int i = 0; i < vect.size(); i++) {
         for (int j = 0; j < vect[i].size(); j++) {
             if (vect[i][j] == "_") {
@@ -76,34 +81,127 @@ pair<int, int> zero_intelligence(vector<vector<string>> vect, string comp) {
                 if (winner == "") {
                     vect[i][j] = "_";
                 } else {
-                    return make_pair(i, j);
+                    int val;
+                    if (isMax) {
+                        val = 20;
+                    } else {
+                        val = -20;
+                    }
+                    return make_pair(val, make_pair(i, j));
                 }
             }
         }
     }
-    chance++;
-    for (int i = 0; i < vect.size(); i++) {
-        for (int j = 0; j < vect[i].size(); j++) {
-            if (vect[i][j] == "_") {
-                vect[i][j] = human;
-                winner = checkwinner(vect, chance);
-                if (winner == "") {
+    // chance++;
+    // for (int i = 0; i < vect.size(); i++) {
+    //     for (int j = 0; j < vect[i].size(); j++) {
+    //         if (vect[i][j] == "_") {
+    //             vect[i][j] = human;
+    //             winner = checkwinner(vect, chance);
+    //             if (winner == "") {
+    //                 vect[i][j] = "_";
+    //             } else {
+    //                 int val;
+    //                 if (isMax) {
+    //                     val = 10;
+    //                 } else {
+    //                     val = -10;
+    //                 }
+    //                 return make_pair(val, make_pair(i, j));
+    //             }
+    //         }
+    //     }
+    // }
+    // chance++;
+
+    if (depth == 0) {
+        for (int i = 0; i < vect.size(); i++) {
+            for (int j = 0; j < vect[i].size(); j++) {
+                if (vect[i][j] == "_") {
+                    vect[i][j] = comp;
+
+                    int val = 0;
+
+                    // winner = checkwinner(vect, chance);
+                    // if (winner != "") {
+                    //     // if (isMax) {
+                    //     //     val = 20;
+                    //     // } else {
+                    //     //     val = 20;
+                    //     // }
+                    //     val = 20;
+                    // } else {
+                    //     vect[i][j] = human;
+                    //     winner = checkwinner(vect, chance + 1);
+
+                    //     if (winner != "") {
+                    //         // if (isMax) {
+                    //         //     val = -10;
+                    //         // } else {
+                    //         //     val = 10;
+                    //         // }
+                    //         val = 10;
+                    //     } else {
+                    //         val = 0;
+                    //     }
+                    // }
+
                     vect[i][j] = "_";
-                } else {
-                    return make_pair(i, j);
+
+                    values.push_back(val);
+                    options.push_back(make_pair(i, j));
+                }
+            }
+        }
+    } else {
+        for (int i = 0; i < vect.size(); i++) {
+            for (int j = 0; j < vect[i].size(); j++) {
+                if (vect[i][j] == "_") {
+                    vect[i][j] = comp;
+
+                    pair<int, pair<int, int>> intelOutput = intelligence(vect, human, depth - 1, !isMax);
+                    
+                    int val = intelOutput.first;
+                    values.push_back(val);
+                    
+                    options.push_back(make_pair(i, j));
+                    
+                    vect[i][j] = "_";
                 }
             }
         }
     }
-    chance++;
-    int i, j;
-    while (true) {
-        i = rand()%3;
-        j = rand()%3;
-        if (vect[i][j] == "_") {
-            return make_pair(i, j);
+    
+    int selectedValue;
+    pair<int, int> selectedOption;
+
+    if (isMax) {
+        selectedValue = -100;
+        for (int i = 0; i < values.size(); i++) {
+            // selectedValue = max(selectedValue, values[i]);
+            selectedValue = selectedValue < values[i] ? values[i] : selectedValue;
+            selectedOption = selectedValue < values[i] ? options[i] : selectedOption;
+        }
+    } else {
+        selectedValue = 100;
+        for (int i = 0; i < values.size(); i++) {
+            // selectedValue = min(selectedValue, values[i]);
+            selectedValue = selectedValue > values[i] ? values[i] : selectedValue;
+            selectedOption = selectedValue > values[i] ? options[i] : selectedOption;
         }
     }
+    
+    vector<pair<int, int>> sameValueOptions;
+    for (int i = 0; i < options.size(); i++) {
+        if (values[i] == selectedValue) {
+            sameValueOptions.push_back(options[i]);
+        }
+    }
+
+    int optionIdx = rand() % sameValueOptions.size();
+    selectedOption = sameValueOptions[optionIdx];
+
+    return make_pair(selectedValue, selectedOption);
 }
 
 int main() { 
@@ -180,10 +278,31 @@ int main() {
             }
         }
         else if (num_players == 1) {
+            cout << "Choose level, enter:" << endl;
+            cout << "1 for Easy" << endl;
+            cout << "2 for Medium" << endl;
+            cout << "3 for Hard" << endl;
+            int level;
+            cin >> level;
+            if (level != 1 && level != 2 && level != 3) {
+                cout << "It's not an the option. Choose again." << endl;
+                cin >> level;
+            }
+            int depth;
+            if (level == 1) {
+                depth = 0;
+            }
+            if (level == 2) {
+                depth = 4;
+            }
+            if (level == 3) {
+                depth = 8;
+            }
+
             cout << "What do you want to play as? x or o? o always starts the game." << endl;
-            int x, y;
             string choose;
             cin >> choose;
+            int x, y;
             while (choose != "o" && choose != "x") {
                 cout << "Ayee this is not in the option. Enter o or x to choose. Enter 0 to exit the game." << endl;
                 cin >> choose;
@@ -222,7 +341,9 @@ int main() {
                         }    
                     } else {
                         cout << "Computer's turn" << endl;
-                        pair<int, int> comp_turn = zero_intelligence(v, "x");
+                        int maxDepth = 8 - i;
+                        pair<int, pair<int, int>> intelOutput = intelligence(v, "x", min(depth, maxDepth), true);
+                        pair<int, int> comp_turn = intelOutput.second;
                         x = comp_turn.first;
                         y = comp_turn.second;
                         updategame("x", x, y, v);
@@ -270,7 +391,9 @@ int main() {
                         }    
                     } else {
                         cout << "Computer's turn" << endl;
-                        pair<int, int> comp_turn = zero_intelligence(v, "o");
+                        int maxDepth = 8 - i;
+                        pair<int, pair<int, int>> intelOutput = intelligence(v, "o", min(depth, maxDepth), true);
+                        pair<int, int> comp_turn = intelOutput.second;
                         x = comp_turn.first;
                         y = comp_turn.second;
                         updategame("o", x, y, v);
